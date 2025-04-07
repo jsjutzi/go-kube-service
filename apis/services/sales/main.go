@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"os"
+	"os/signal"
+	"runtime"
+	"syscall"
 
 	"github.com/jsjutzi/go-kube-service/foundation/logger"
 )
@@ -34,5 +37,18 @@ func main() {
 }
 
 func run(ctx context.Context, log *logger.Logger) error {
+	// -------------------------------------------------------------------------
+	// GOMAXPROCS
+
+	log.Info(ctx, "startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
+
+	sig := <-shutdown
+
+	log.Info(ctx, "shutdown", "status", "shutdown started", "signal", sig)
+	defer log.Info(ctx, "shutdown", "status", "shutdown complete", "signal", sig)
+
 	return nil
 }
