@@ -10,6 +10,9 @@ import (
 	"github.com/jsjutzi/go-kube-service/foundation/logger"
 )
 
+var build = "develop"
+var routes = "all" // go build -ldflags "-X main.routes=crud"
+
 func main() {
 	// ---------- Logger Setup -------------//
 	var log *logger.Logger
