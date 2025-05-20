@@ -3,13 +3,16 @@ package main
 import (
 	"context"
 	"errors"
+	"expvar"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/ardanlabs/conf/v3"
+	"github.com/ardanlabs/service/app/sdk/debug"
 	"github.com/jsjutzi/go-kube-service/foundation/logger"
 )
 
@@ -106,6 +109,19 @@ func run(ctx context.Context, log *logger.Logger) error {
 	}
 	log.Info(ctx, "startup", "config", out)
 
+	expvar.NewString("build").Set(cfg.Build)
+
+	// -------------------------------------------------------------------------
+	// Start Debug Service
+	// Orphaning this goroutine intentionally, as it only handles reads for bebug purposes
+	go func() {
+		log.Info(ctx, "startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
+
+		if err := http.ListenAndServe(cfg.Web.DebugHost, debug.Mux()); err != nil {
+			log.Error(ctx, "shutdown", "status", "debug v1 router closed", "host", cfg.Web.DebugHost, "msg", err)
+		}
+	}()
+
 	// -------------------------------------------------------------------------
 	// App Shutting Down
 
@@ -116,9 +132,6 @@ func run(ctx context.Context, log *logger.Logger) error {
 
 	log.Info(ctx, "shutdown", "status", "shutdown started", "signal", sig)
 	defer log.Info(ctx, "shutdown", "status", "shutdown complete", "signal", sig)
-
-	// -------------------------------------------------------------------------
-	// Handle config & build logging
 
 	return nil
 }
