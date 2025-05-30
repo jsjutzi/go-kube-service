@@ -10,6 +10,15 @@ help:
 version:
 	go run api/services/sales/main.go --version
 
+curl-test:
+	curl -il -X GET http://localhost:3000/test
+
+curl-live:
+	curl -il -X GET http://localhost:3000/liveness
+
+curl-ready:
+	curl -il -X GET http://localhost:3000/readiness
+
 # ==============================================================================
 # Define dependencies
 
@@ -32,7 +41,6 @@ VERSION         := 0.0.1
 SALES_IMAGE     := $(BASE_IMAGE_NAME)/$(SALES_APP):$(VERSION)
 METRICS_IMAGE   := $(BASE_IMAGE_NAME)/metrics:$(VERSION)
 AUTH_IMAGE      := $(BASE_IMAGE_NAME)/$(AUTH_APP):$(VERSION)
-# VERSION       := "0.0.1-$(shell git rev-parse --short HEAD)"
 
 # ==============================================================================
 # Install dependencies
@@ -87,14 +95,6 @@ dev-up:
 		--config zarf/k8s/dev/kind-config.yaml
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
-
-	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER) & \
-	kind load docker-image $(GRAFANA) --name $(KIND_CLUSTER) & \
-	kind load docker-image $(PROMETHEUS) --name $(KIND_CLUSTER) & \
-	kind load docker-image $(TEMPO) --name $(KIND_CLUSTER) & \
-	kind load docker-image $(LOKI) --name $(KIND_CLUSTER) & \
-	kind load docker-image $(PROMTAIL) --name $(KIND_CLUSTER) & \
-	wait;
 
 dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
