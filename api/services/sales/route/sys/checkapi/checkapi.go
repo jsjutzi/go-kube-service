@@ -2,8 +2,9 @@ package checkapi
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
+
+	"github.com/jsjutzi/go-kube-service/foundation/web"
 )
 
 func liveness(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -13,9 +14,7 @@ func liveness(ctx context.Context, w http.ResponseWriter, r *http.Request) error
 		Status: "ok",
 	}
 
-	json.NewEncoder(w).Encode(status)
-
-	return nil
+	return web.Respond(ctx, w, status, http.StatusOK)
 }
 
 func readiness(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -25,7 +24,5 @@ func readiness(ctx context.Context, w http.ResponseWriter, r *http.Request) erro
 		Status: "ready",
 	}
 
-	json.NewEncoder(w).Encode(status)
-
-	return nil
+	return web.Respond(ctx, w, status, http.StatusOK)
 }
