@@ -4,11 +4,13 @@ import (
 	"os"
 
 	"github.com/jsjutzi/go-kube-service/api/services/sales/route/sys/checkapi"
+	"github.com/jsjutzi/go-kube-service/app/api/mid"
+	"github.com/jsjutzi/go-kube-service/foundation/logger"
 	"github.com/jsjutzi/go-kube-service/foundation/web"
 )
 
-func WebAPI(shutdown chan os.Signal) *web.App {
-	mux := web.NewApp(shutdown)
+func WebAPI(log *logger.Logger, shutdown chan os.Signal) *web.App {
+	mux := web.NewApp(shutdown, mid.Logger(log))
 	checkapi.Routes(mux)
 
 	return mux
