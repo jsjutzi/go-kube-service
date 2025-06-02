@@ -2,26 +2,20 @@ package mid
 
 import (
 	"context"
-	"net/http"
+	"fmt"
 
 	"github.com/jsjutzi/go-kube-service/foundation/logger"
-	"github.com/jsjutzi/go-kube-service/foundation/web"
 )
 
-func Logger(log *logger.Logger) web.MidHandler {
-	m := func(handler web.Handler) web.Handler {
-		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-			log.Info(ctx, "request started", "method", r.Method, "path", r.URL.Path, "remote_addr", r.RemoteAddr)
-			// LOGGING HERE
-			err := handler(ctx, w, r)
-
-			log.Info(ctx, "request completed", "method", r.Method, "path", r.URL.Path, "remote_addr", r.RemoteAddr)
-
-			return err
-		}
-
-		return h
+func Logger(ctx context.Context, log *logger.Logger, path string, rawQuery string, method string, remoteAddr string, handler Handler) error {
+	if rawQuery != "" {
+		path = fmt.Sprintf("%s?%s", path, rawQuery)
 	}
+	log.Info(ctx, "request started", "method", method, "path", path, "remote_addr", remoteAddr)
 
-	return m
+	err := handler(ctx)
+
+	log.Info(ctx, "request completed", "method", method, "path", path, "remote_addr", remoteAddr)
+
+	return err
 }
