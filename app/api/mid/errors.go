@@ -14,7 +14,7 @@ func Errors(ctx context.Context, log *logger.Logger, handler Handler) error {
 		return nil
 	}
 
-	log.Error(ctx, "message", "error", err.Error())
+	log.Error(ctx, "message", "ERROR", err.Error())
 
 	if errs.IsError(err) {
 		return errs.GetError(err)
