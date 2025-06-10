@@ -52,6 +52,27 @@ func (a *App) HandleFunc(pattern string, handler Handler, mw ...MidHandler) {
 	a.ServeMux.HandleFunc(pattern, h)
 }
 
+// HandleFuncWithNoMiddleware allows us to handle a request without any middleware,
+func (a *App) HandleFuncWithNoMiddleware(pattern string, handler Handler, mw ...MidHandler) {
+	h := func(w http.ResponseWriter, r *http.Request) {
+		v := Values{
+			TraceID: uuid.NewString(),
+			Now:     time.Now().UTC(),
+		}
+
+		ctx := setValues(r.Context(), &v)
+
+		if err := handler(ctx, w, r); err != nil {
+			if validateError(err) {
+				a.SignalShutdown()
+				return
+			}
+		}
+	}
+
+	a.ServeMux.HandleFunc(pattern, h)
+}
+
 func (a *App) SignalShutdown() {
 	a.shutdown <- syscall.SIGTERM
 }
